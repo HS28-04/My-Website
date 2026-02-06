@@ -4,174 +4,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hakan Seker – Portfolio</title>
+    <title>Hakan Seker – Website</title>
 
     <style>
-        html {
-            scroll-behavior: smooth;
+        html { scroll-behavior: smooth; }
+        
+        /* HIDDEN SYSTEM CURSOR EVERYWHERE */
+        * { cursor: none !important; }
+
+        body, html { 
+            margin: 0; padding: 0; 
+            font-family: Arial, sans-serif; 
+            background-color: white; color: black; 
+            overflow-x: hidden; 
         }
 
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: white;
-            color: black;
-            cursor: none;
-            overflow-x: hidden;
-        }
-
-        /* --- LOADING SCREEN STYLES --- */
+        /* --- LOADING SCREEN --- */
         #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 1s ease-in-out;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: white; z-index: 99999; display: flex;
+            flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.8s ease-in-out;
         }
-
-        #loading-screen h1 {
-            font-weight: 300;
-            font-size: 3em;
-            letter-spacing: 5px;
-            margin-bottom: 20px;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }
-
-        #loader-canvas-container {
-            width: 100%;
-            height: 300px;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }
-
+        #loading-screen h1 { font-weight: 300; font-size: 3em; letter-spacing: 5px; margin: 0 0 20px 0; opacity: 0; transition: opacity 0.6s ease-in-out; }
+        #loader-canvas-container { width: 100%; height: 300px; opacity: 0; transition: opacity 0.6s ease-in-out; }
         .fade-in { opacity: 1 !important; }
-        /* ----------------------------- */
 
-        /* Header */
         header {
-            position: fixed;
-            width: 100%;
-            top: 0;
-            height: 80px;
-            line-height: 80px;
-            background-color: white;
-            padding: 0 3%;
-            border-bottom: 1px solid #ccc;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-            z-index: 1000;
-            box-sizing: border-box;
+            position: fixed; width: 100%; top: 0; height: 80px; line-height: 80px;
+            background-color: white; padding: 0 3%; border-bottom: 1px solid #ccc;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); z-index: 1000; box-sizing: border-box;
         }
+        nav a { color: black; text-decoration: none; margin-right: 20px; font-weight: 300; font-size: 1.2em; }
 
-        nav a {
-            color: black;
-            text-decoration: none;
-            margin-right: 20px;
-            font-weight: 300;
-            font-size: 1.2em;
-        }
-
-        nav a:hover {
-            text-decoration: underline;
-        }
-
-        /* Sections spacing */
-        section {
-            padding-top: 60px;
-            padding-bottom: 30px;
-            padding-left: 3%;
-            padding-right: 3%;
-            box-sizing: border-box;
-            text-align: left;
-        }
-
+        /* --- WORKS SECTION --- */
         #lavori {
-            padding-top: 120px; 
+            padding: 160px 3% 80px 3%;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: 1fr 1fr;
             gap: 20px;
+            max-width: 1200px;
         }
 
         .work-wrapper {
+            position: relative;
             width: 100%;
             aspect-ratio: 1 / 1;
-            overflow: hidden;
-            border-radius: 8px;
-            display: block;
-            position: relative;
             background-color: #f0f0f0;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .work-wrapper img,
-        .work-wrapper div {
-            width: 100%;
-            height: 100%;
+            border-radius: 8px;
+            overflow: hidden;
             display: block;
-            object-fit: cover;
+            transition: transform 0.3s ease;
         }
+        .work-wrapper:hover { transform: scale(1.02); }
 
-        .work-wrapper canvas {
-            width: 100% !important;
-            height: 100% !important;
-            display: block;
-        }
-
-        .work-wrapper:hover {
-            transform: scale(1.02);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        #chi-sono { background-color: #f5f5f5; }
+        #chi-sono { background-color: #f5f5f5; padding: 100px 3%; }
         #chi-sono p { max-width: 600px; line-height: 1.6; margin: 0; }
-        #contatti { border-top: 1px solid #ccc; }
-        #contatti p { max-width: 600px; line-height: 1.6; margin: 0 0 10px 0; }
+
+        #contatti { border-top: 1px solid #ccc; padding: 60px 3%; }
+        #contatti p { margin: 0 0 10px 0; }
         #contatti a, footer a { color: black; text-decoration: none; }
-        #contatti a:hover, footer a:hover { text-decoration: underline; }
 
-        footer {
-            padding: 20px 3%;
-            border-top: 1px solid #ccc;
-            box-sizing: border-box;
-        }
+        footer { padding: 20px 3%; border-top: 1px solid #ccc; }
 
-        /* Cursor */
+        /* CUSTOM CURSOR */
         .cursor {
-            position: fixed;
-            width: 26px;
-            height: 26px;
-            background-color: rgba(0, 0, 0, 0.3);
-            border-radius: 50%;
-            pointer-events: none;
-            transform: translate(-50%, -50%);
+            position: fixed; width: 26px; height: 26px;
+            background-color: rgba(0, 0, 0, 0.3); border-radius: 50%;
+            pointer-events: none; transform: translate(-50%, -50%);
             transition: width 0.15s, height 0.15s, background-color 0.15s;
-            z-index: 9999;
+            z-index: 100000;
         }
+        .cursor.hovered { width: 130px; height: 130px; background-color: rgba(255, 255, 255, 0.8); mix-blend-mode: difference; }
 
-        .cursor.hovered {
-            width: 130px;
-            height: 130px;
-            background-color: rgba(255, 255, 255, 0.8);
-            mix-blend-mode: difference;
-        }
-
-        @media (max-width: 1024px) {
-            #lavori { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 768px) {
-            #lavori { grid-template-columns: 1fr; padding-top: 100px; }
-            section { padding-top: 40px; padding-bottom: 20px; }
-        }
+        @media (max-width: 768px) { #lavori { grid-template-columns: 1fr; } }
     </style>
 </head>
 
@@ -191,18 +97,17 @@
 
     <section id="lavori">
         <a href="lavoro_1.html" class="work-wrapper">
-            <div id="sphere-preview"></div>
+            <div id="sphere-preview" style="width:100%; height:100%;"></div>
         </a>
         <a href="lavoro_2.html" class="work-wrapper">
-            <div id="font-preview"></div>
+            <div id="font-preview" style="width:100%; height:100%;"></div>
         </a>
-        <a href="#" class="work-wrapper"><img src="images/motociGaga.png" alt="Work 3"></a>
-        <a href="#" class="work-wrapper"><img src="images/motociGaga.png" alt="Work 4"></a>
-        <a href="#" class="work-wrapper"><img src="images/motociGaga.png" alt="Work 5"></a>
     </section>
 
     <section id="chi-sono">
-        <p>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."</p>
+        <p>"This is just a website created during a seminar, don't take it seriously.
+            <br>Also I have no idea what I'm doing anymore I'm losing my mind."
+        </p>
     </section>
 
     <section id="contatti">
@@ -219,66 +124,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
     <script>
-        (function() {
-            const loader = document.getElementById('loading-screen');
-            const welcome = document.getElementById('welcome-text');
-            const canvasCont = document.getElementById('loader-canvas-container');
-
-            // Check if user has already seen the loader in this session
-            if (sessionStorage.getItem('visited')) {
-                loader.style.display = 'none';
-            } else {
-                // Initial Fades
-                setTimeout(() => welcome.classList.add('fade-in'), 100);
-                setTimeout(() => canvasCont.classList.add('fade-in'), 500);
-
-                // Initialize the rolling sphere loader
-                new p5((s) => {
-                    let face;
-                    let posX;
-                    let rotZ = 0;
-
-                    s.preload = () => { face = s.loadImage('images/face.png'); }
-                    s.setup = () => {
-                        let canvas = s.createCanvas(window.innerWidth, 300, s.WEBGL);
-                        canvas.parent('loader-canvas-container');
-                        posX = -s.width/2 - 100; // Start off-screen left
-                        s.noStroke();
-                    }
-                    s.draw = () => {
-                        s.background(255);
-                        s.ambientLight(150);
-                        s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
-                        
-                        s.push();
-                        s.translate(posX, 0, 0);
-                        s.rotateZ(rotZ); // Rotation to simulate rolling
-                        s.rotateY(s.frameCount * 0.02); // Some facial rotation
-                        if(face) {
-                            s.texture(face);
-                            s.sphere(80, 64, 64);
-                        }
-                        s.pop();
-
-                        posX += 5; // Rolling speed
-                        rotZ += 0.06;
-
-                        // Exit logic: when sphere rolls off-screen right
-                        if (posX > s.width/2 + 150) {
-                            loader.style.opacity = '0';
-                            setTimeout(() => {
-                                loader.style.display = 'none';
-                                sessionStorage.setItem('visited', 'true');
-                            }, 1000);
-                            s.noLoop();
-                        }
-                    }
-                });
-            }
-        })();
-    </script>
-
-    <script>
+        // --- CURSOR LOGIC ---
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', e => {
             cursor.style.left = e.clientX + 'px';
@@ -289,43 +135,81 @@
             el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
         });
 
-        // Grid Sphere
+        // --- LOADING SCREEN ---
+        (function () {
+            const loader = document.getElementById('loading-screen');
+            const welcome = document.getElementById('welcome-text');
+            const canvasCont = document.getElementById('loader-canvas-container');
+
+            if (sessionStorage.getItem('visited')) {
+                loader.style.display = 'none';
+            } else {
+                setTimeout(() => welcome.classList.add('fade-in'), 100);
+                setTimeout(() => canvasCont.classList.add('fade-in'), 300);
+
+                new p5((s) => {
+                    let face, posX, rotZ = 0, rotY = 0, startTime;
+                    s.preload = () => { face = s.loadImage('images/face.png'); }
+                    s.setup = () => {
+                        let canvas = s.createCanvas(window.innerWidth, 300, s.WEBGL);
+                        canvas.parent('loader-canvas-container');
+                        posX = -s.width * 0.4;
+                        startTime = s.millis();
+                    }
+                    s.draw = () => {
+                        s.background(255);
+                        s.ambientLight(150); s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
+                        s.push();
+                        s.translate(posX, 0, 0); s.rotateZ(rotZ); s.rotateY(rotY);
+                        if (face) { s.texture(face); s.sphere(80, 64, 64); }
+                        s.pop();
+                        posX += 5; rotZ += 0.05; rotY += 0.08;
+                        if (s.millis() - startTime > 2200) {
+                            loader.style.opacity = '0';
+                            setTimeout(() => { loader.style.display = 'none'; sessionStorage.setItem('visited', 'true'); }, 800);
+                            s.noLoop();
+                        }
+                    }
+                });
+            }
+        })();
+
+        // --- SPHERE PREVIEW ---
         new p5((s) => {
             let face; let rotY = 0;
             s.preload = () => { face = s.loadImage('images/face.png'); }
             s.setup = () => {
-                let container = s.select('#sphere-preview');
-                let canvas = s.createCanvas(container.width, container.height, s.WEBGL);
-                canvas.parent('sphere-preview');
-                s.noStroke();
+                const rect = document.getElementById('sphere-preview').getBoundingClientRect();
+                s.createCanvas(rect.width, rect.height, s.WEBGL).parent('sphere-preview');
             }
             s.draw = () => {
                 s.background(240);
+                s.noStroke();
                 s.rotateY(rotY); rotY += 0.01;
                 s.ambientLight(150); s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
-                if(face) { s.texture(face); s.sphere(s.width * 0.35, 64, 64); }
+                if (face) { s.texture(face); s.sphere(s.width * 0.35, 64, 64); }
             }
         });
 
-        // Grid Font Box
+        // --- FONT PREVIEW ---
         new p5((s) => {
             let font;
             s.preload = () => { font = s.loadFont('https://cdnjs.cloudflare.com/ajax/libs/topcoat/0.8.0/font/SourceCodePro-Regular.otf'); }
             s.setup = () => {
-                let container = s.select('#font-preview');
-                let canvas = s.createCanvas(container.width, container.height, s.WEBGL);
-                canvas.parent('font-preview');
-                s.textFont(font); s.textAlign(s.CENTER, s.CENTER);
+                const rect = document.getElementById('font-preview').getBoundingClientRect();
+                s.createCanvas(rect.width, rect.height, s.WEBGL).parent('font-preview');
             }
             s.draw = () => {
                 s.background(245); s.ambientLight(180); s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
                 s.rotateX(-0.2); s.rotateY(0.2); s.noStroke();
                 s.push(); s.fill(220); s.box(s.width * 0.7, s.width * 0.7, s.width * 0.1); s.pop();
-                s.push(); s.translate(0, 0, s.width * 0.06); s.fill(30); s.textSize(s.width * 0.3); 
-                s.text("H", -s.width * 0.15, 0); s.text("S", s.width * 0.15, 0); s.pop();
+                if (font) {
+                    s.textFont(font); s.textAlign(s.CENTER, s.CENTER);
+                    s.push(); s.translate(0, 0, s.width * 0.06); s.fill(30); s.textSize(s.width * 0.3);
+                    s.text("H", -s.width * 0.15, 0); s.text("S", s.width * 0.15, 0); s.pop();
+                }
             }
         });
     </script>
-
 </body>
 </html>
