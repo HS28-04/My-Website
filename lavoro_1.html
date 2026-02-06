@@ -9,81 +9,117 @@
     <style>
         html { scroll-behavior: smooth; }
         
-        /* Hides the original mouse globally and on hover */
+        :root {
+            --bg-color: white;
+            --text-color: black;
+            --card-bg: #f0f0f0;
+            --border-color: #ccc;
+            --header-bg: white;
+            /* Tab colors for Light Mode */
+            --tab-bg: #333;
+            --tab-text: white;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --card-bg: #1e1e1e;
+            --border-color: #333;
+            --header-bg: #1a1a1a;
+            /* Tab colors for Dark Mode (White tab) */
+            --tab-bg: #ffffff;
+            --tab-text: #000000;
+        }
+
         * { cursor: none !important; }
 
         body, html { 
             margin: 0; padding: 0; 
             font-family: Arial, sans-serif; 
-            background-color: white; color: black; 
-            overflow-x: hidden; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            overflow-x: hidden;
+            transition: background-color 0.3s ease;
+        }
+
+        /* --- THE SHAKE --- */
+        .earthquake { animation: shake-screen 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake-screen {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        /* --- CLICKABLE TAB --- */
+        #pull-tab {
+            position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+            width: 35px; height: 120px; 
+            background-color: var(--tab-bg);
+            border-radius: 8px 0 0 8px; display: flex; align-items: center;
+            justify-content: center; z-index: 2000; box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            transition: opacity 0.1s, background-color 0.3s ease;
+        }
+        #pull-tab.shattered { opacity: 0; pointer-events: none; }
+        #pull-tab span {
+            color: var(--tab-text); font-size: 10px; font-weight: 900;
+            letter-spacing: 1px; white-space: nowrap;
+            writing-mode: vertical-rl; transform: rotate(180deg);
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+
+        #particles-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 2001;
         }
 
         header {
             position: fixed; width: 100%; top: 0; height: 80px; line-height: 80px;
-            background-color: white; padding: 0 3%; border-bottom: 1px solid #ccc;
+            background-color: var(--header-bg); padding: 0 3%; border-bottom: 1px solid var(--border-color);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); z-index: 1000; box-sizing: border-box;
         }
 
-        nav a { color: black; text-decoration: none; margin-right: 20px; font-weight: 300; font-size: 1.2em; }
-        nav a:hover { text-decoration: none; }
+        nav a { color: var(--text-color); text-decoration: none; margin-right: 20px; font-weight: 300; font-size: 1.2em; }
 
         section { padding: 60px 3% 30px 3%; box-sizing: border-box; text-align: left; }
         #lavoro-sfera { padding-top: 120px; display: flex; justify-content: flex-start; min-height: 70vh; }
 
         #sphere-container {
             width: 100%; max-width: 600px; aspect-ratio: 1/1;
-            border-radius: 8px; overflow: hidden; background-color: #f0f0f0;
+            border-radius: 8px; overflow: hidden; background-color: var(--card-bg);
         }
 
-        #sphere-container canvas { display: block; width: 100% !important; height: 100% !important; }
-
-        #contatti { background-color: white; color: black; border-top: 1px solid #ccc; padding-top: 40px;}
+        #contatti { background-color: var(--bg-color); border-top: 1px solid var(--border-color); padding-top: 40px;}
         #contatti p { max-width: 600px; line-height: 1.6; margin: 0 0 10px 0; }
-        #contatti a, footer a { color: black; text-decoration: none; }
-        #contatti a:hover, footer a:hover { text-decoration: none; }
+        #contatti a, footer a { color: var(--text-color); text-decoration: none; }
 
-        footer { padding: 20px 3%; border-top: 1px solid #ccc; box-sizing: border-box; }
+        footer { padding: 20px 3%; border-top: 1px solid var(--border-color); box-sizing: border-box; }
 
-        /* --- CURSOR SYSTEM --- */
+        /* --- CURSOR --- */
         .cursor {
             position: fixed; width: 26px; height: 26px; 
             background-color: rgba(255, 255, 255, 0.8); 
             border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%);
-            transition: width 0.15s, height 0.15s; 
-            z-index: 9998; 
-            mix-blend-mode: difference; 
+            transition: width 0.15s, height 0.15s; z-index: 99998; mix-blend-mode: difference; 
         }
-
         .cursor.hovered { width: 130px; height: 130px; }
-
         .cursor-text-container {
             position: fixed; width: 130px; height: 130px; 
             pointer-events: none; transform: translate(-50%, -50%);
-            z-index: 9999; display: none;
+            z-index: 99999; display: none;
         }
-
-        /* --- BOUNCE ANIMATION --- */
-        .bounce {
-            animation: cursor-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
+        .bounce { animation: cursor-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes cursor-bounce {
             0% { transform: translate(-50%, -50%) scale(1); }
             30% { transform: translate(-50%, -50%) scale(1.4); }
             50% { transform: translate(-50%, -50%) scale(0.95); }
             100% { transform: translate(-50%, -50%) scale(1); }
         }
-
         .cursor-text-container span {
-            position: absolute; 
-            font-size: 12px; 
-            font-weight: 800;
-            letter-spacing: 0.05em;
-            white-space: pre; 
-            color: white; 
-            text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
-            opacity: 1;
+            position: absolute; font-size: 12px; font-weight: 800;
+            letter-spacing: 0.05em; white-space: pre; color: white; 
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.2); opacity: 1;
             transition: opacity 0.5s ease;
         }
 
@@ -95,6 +131,8 @@
 </head>
 
 <body>
+    <div id="particles-overlay"></div>
+    <div id="pull-tab"><span id="tab-label">DARK MODE</span></div>
 
     <header>
         <nav>
@@ -123,17 +161,13 @@
         const cursor = document.getElementById('cursor');
         const textContainer = document.getElementById('cursor-text-container');
 
-        // Mouse follow logic
         document.addEventListener('mousemove', e => {
-            const x = e.clientX;
-            const y = e.clientY;
-            cursor.style.left = x + 'px';
-            cursor.style.top = y + 'px';
-            textContainer.style.left = x + 'px';
-            textContainer.style.top = y + 'px';
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            textContainer.style.left = e.clientX + 'px';
+            textContainer.style.top = e.clientY + 'px';
         });
 
-        // Global Bounce Logic
         document.addEventListener('mousedown', () => {
             cursor.classList.remove('bounce');
             textContainer.classList.remove('bounce');
@@ -142,21 +176,18 @@
             textContainer.classList.add('bounce');
         });
 
-        document.querySelectorAll('a').forEach(el => {
+        document.querySelectorAll('a, #pull-tab').forEach(el => {
             el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
             el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
         });
 
         function createCircularText(container, text, radius, side = "top") {
             if (side === "top") container.innerHTML = "";
-            
             const letters = text.toUpperCase().split("");
             const totalAngle = 110; 
             const angleStep = totalAngle / (letters.length - 1);
-            
             letters.forEach((letter, i) => {
                 let angle, x, y, rotation;
-                
                 if (side === "top") {
                     angle = -55 + i * angleStep;
                     const rad = angle * (Math.PI / 180);
@@ -170,33 +201,109 @@
                     y = -radius * Math.cos(rad);
                     rotation = angle + 180;
                 }
-                
                 const span = document.createElement("span");
                 span.innerText = letter;
                 span.style.left = `calc(50% + ${x}px)`;
                 span.style.top = `calc(50% + ${y}px)`;
-                
                 span.style.transformOrigin = side === "top" ? "center bottom" : "center top";
                 span.style.transform = `translate(-50%, ${side === 'top' ? '-12px' : '-5px'}) rotate(${rotation}deg)`;
-                
                 container.appendChild(span);
             });
         }
-    </script>
 
-    <script>
-        new p5((s) => {
-            let face; 
-            let rotY = 0;
-            let isFrozen = false;
+        // --- SHATTER SYSTEM ---
+        let shatterInstance = new p5((s) => {
+            let particles = [];
+            let isExploding = false;
+            let tabW = 35, tabH = 120;
+
+            s.setup = () => {
+                let canvas = s.createCanvas(window.innerWidth, window.innerHeight);
+                canvas.parent('particles-overlay');
+                s.noStroke();
+            };
+
+            s.draw = () => {
+                s.clear();
+                if (particles.length > 0) {
+                    particles.forEach((p, index) => {
+                        p.update(); p.display();
+                        if (p.reconstructed) particles.splice(index, 1);
+                    });
+                    if (particles.length === 0 && isExploding) {
+                        isExploding = false;
+                        document.getElementById('pull-tab').classList.remove('shattered');
+                    }
+                }
+            };
+
+            s.shatter = (x, y) => {
+                isExploding = true; particles = [];
+                // Determine particle color based on theme
+                // If body HAS dark-mode, it means we ARE in dark mode (white particles)
+                let pColor = document.body.classList.contains('dark-mode') ? 255 : 51;
+                for (let i = 0; i < 50; i++) {
+                    particles.push(new Particle(s, x - tabW/2, y, tabW, tabH, pColor));
+                }
+                setTimeout(() => { particles.forEach(p => p.startReturn()); }, 1500);
+            };
+
+            class Particle {
+                constructor(s, x, y, w, h, col) {
+                    this.s = s;
+                    this.originX = x + s.random(w);
+                    this.originY = y - h/2 + s.random(h);
+                    this.pos = s.createVector(this.originX, this.originY);
+                    this.vel = p5.Vector.random2D().mult(s.random(5, 15));
+                    this.acc = s.createVector(0, 0);
+                    this.size = s.random(4, 8);
+                    this.returning = false;
+                    this.reconstructed = false;
+                    this.color = col;
+                }
+                update() {
+                    if (this.returning) {
+                        let target = this.s.createVector(this.originX, this.originY);
+                        let dir = p5.Vector.sub(target, this.pos);
+                        let dist = dir.mag();
+                        dir.normalize().mult(15);
+                        this.pos.add(dir);
+                        if (dist < 10) this.reconstructed = true;
+                    } else {
+                        this.pos.add(this.vel);
+                        this.vel.mult(0.95);
+                    }
+                }
+                display() { this.s.fill(this.color); this.s.rect(this.pos.x, this.pos.y, this.size, this.size); }
+                startReturn() { this.returning = true; }
+            }
+        });
+
+        const pullTab = document.getElementById('pull-tab');
+        const tabLabel = document.getElementById('tab-label');
+
+        pullTab.addEventListener('click', () => {
+            const rect = pullTab.getBoundingClientRect();
             
-            // Smoother speed transition variables
-            let targetSpeed = 0.01;
-            let currentSpeed = 0.01;
-            let lerpFactor = 0.05; // Adjust this to control the "weight" of the stop (roughly 1s at 60fps)
+            // Toggle theme first so shatter color detection is accurate
+            const isDark = document.body.classList.toggle('dark-mode');
+            tabLabel.innerText = isDark ? "WHITE MODE" : "DARK MODE";
+            
+            pullTab.classList.add('shattered');
+            shatterInstance.shatter(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            
+            document.body.classList.remove('earthquake');
+            void document.body.offsetWidth; 
+            document.body.classList.add('earthquake');
+            setTimeout(() => document.body.classList.remove('earthquake'), 500);
+        });
+
+        // --- MAIN SPHERE SCRIPT ---
+        new p5((s) => {
+            let face; let rotY = 0; let isFrozen = false;
+            let targetSpeed = 0.01; let currentSpeed = 0.01; let lerpFactor = 0.05;
 
             s.preload = () => { face = s.loadImage('images/face.png'); }
-            
             s.setup = () => {
                 const container = s.select('#sphere-container');
                 const canvas = s.createCanvas(container.width, container.height, s.WEBGL);
@@ -208,15 +315,12 @@
                     textContainer.style.display = 'block';
                     updateText();
                 });
-
                 canvas.elt.addEventListener('mouseleave', () => {
                     cursor.classList.remove('hovered');
                     textContainer.style.display = 'none';
                 });
-
                 canvas.elt.addEventListener('click', () => {
                     isFrozen = !isFrozen;
-                    // Switch target speed based on frozen state
                     targetSpeed = isFrozen ? 0 : 0.01;
                     updateText();
                 });
@@ -232,23 +336,14 @@
             }
 
             s.draw = () => {
-                s.background(240);
-                
-                // Gradually move currentSpeed toward targetSpeed
+                if(document.body.classList.contains('dark-mode')) s.background(30); else s.background(240);
                 currentSpeed = s.lerp(currentSpeed, targetSpeed, lerpFactor);
-                
                 rotY += currentSpeed;
-                
                 s.rotateY(rotY);
                 s.ambientLight(150); 
                 s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
-                
-                if (face) { 
-                    s.texture(face); 
-                    s.sphere(s.width * 0.35, 64, 64); 
-                }
+                if (face) { s.texture(face); s.sphere(s.width * 0.35, 64, 64); }
             }
-
             s.windowResized = () => {
                 const container = s.select('#sphere-container');
                 if (container) s.resizeCanvas(container.width, container.height);

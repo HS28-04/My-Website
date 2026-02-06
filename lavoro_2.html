@@ -9,101 +9,131 @@
     <style>
         html { scroll-behavior: smooth; }
         
-        /* HIDDEN SYSTEM CURSOR EVERYWHERE */
+        :root {
+            --bg-color: white;
+            --text-color: black;
+            --card-bg: #f5f5f5;
+            --border-color: #ccc;
+            --header-bg: white;
+            /* Tab colors for Light Mode */
+            --tab-bg: #333;
+            --tab-text: white;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --card-bg: #1e1e1e;
+            --border-color: #333;
+            --header-bg: #1a1a1a;
+            /* Tab colors for Dark Mode */
+            --tab-bg: #ffffff;
+            --tab-text: #000000;
+        }
+
         * { cursor: none !important; }
 
         body, html { 
             margin: 0; padding: 0; 
             font-family: Arial, sans-serif; 
-            background-color: white; color: black; 
-            overflow-x: hidden; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            overflow-x: hidden;
+            transition: background-color 0.3s ease;
+        }
+
+        .earthquake { animation: shake-screen 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake-screen {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        #pull-tab {
+            position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+            width: 35px; height: 120px; 
+            background-color: var(--tab-bg);
+            border-radius: 8px 0 0 8px; display: flex; align-items: center;
+            justify-content: center; z-index: 2000; box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+            transition: opacity 0.1s, background-color 0.3s ease;
+        }
+        #pull-tab.shattered { opacity: 0; pointer-events: none; }
+        #pull-tab span {
+            color: var(--tab-text); font-size: 10px; font-weight: 900;
+            letter-spacing: 1px; white-space: nowrap;
+            writing-mode: vertical-rl; transform: rotate(180deg);
+            pointer-events: none;
+            transition: color 0.3s ease;
+        }
+
+        #particles-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 2001;
         }
 
         header {
             position: fixed; width: 100%; top: 0; height: 80px; line-height: 80px;
-            background-color: white; padding: 0 3%; border-bottom: 1px solid #ccc;
+            background-color: var(--header-bg); padding: 0 3%; border-bottom: 1px solid var(--border-color);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); z-index: 1000; box-sizing: border-box;
         }
 
-        nav a { color: black; text-decoration: none; margin-right: 20px; font-weight: 300; font-size: 1.2em; }
-        
-        nav a:hover { text-decoration: none; }
+        nav a { color: var(--text-color); text-decoration: none; margin-right: 20px; font-weight: 300; font-size: 1.2em; }
 
         section { padding-top: 60px; padding-bottom: 30px; padding-left: 3%; padding-right: 3%; box-sizing: border-box; text-align: left; }
         #lavoro-sfera { padding-top: 120px; display: flex; justify-content: flex-start; min-height: 70vh; }
 
         #sphere-container {
             width: 100%; max-width: 600px; aspect-ratio: 1/1;
-            border-radius: 8px; overflow: hidden; background-color: #f5f5f5;
+            border-radius: 8px; overflow: hidden; background-color: var(--card-bg);
         }
 
-        #sphere-container canvas { display: block; width: 100% !important; height: 100% !important; }
-
-        #contatti { background-color: white; color: black; border-top: 1px solid #ccc; padding-top: 40px; }
+        #contatti { background-color: var(--bg-color); border-top: 1px solid var(--border-color); padding-top: 40px; }
         #contatti p { max-width: 600px; line-height: 1.6; margin: 0 0 10px 0; }
-        #contatti a, footer a { color: black; text-decoration: none; }
-        
-        #contatti a:hover, footer a:hover { text-decoration: none; }
+        #contatti a, footer a { color: var(--text-color); text-decoration: none; }
 
-        footer { padding: 20px 3%; border-top: 1px solid #ccc; box-sizing: border-box; }
+        footer { padding: 20px 3%; border-top: 1px solid var(--border-color); box-sizing: border-box; }
 
-        /* --- CURSOR SYSTEM --- */
         .cursor {
             position: fixed; width: 26px; height: 26px;
             background-color: rgba(0, 0, 0, 0.3);
             border-radius: 50%; pointer-events: none;
             transform: translate(-50%, -50%);
             transition: width 0.15s, height 0.15s, background-color 0.15s;
-            z-index: 9998;
+            z-index: 99998;
         }
-
         .cursor.hovered {
             width: 130px; height: 130px;
             background-color: rgba(255, 255, 255, 0.8);
             mix-blend-mode: difference;
         }
-
         .cursor-text-container {
-            position: fixed;
-            width: 130px; height: 130px;
-            top: 0; left: 0;
-            pointer-events: none;
-            display: none;
-            z-index: 9999;
+            position: fixed; width: 130px; height: 130px;
+            top: 0; left: 0; pointer-events: none;
+            display: none; z-index: 99999;
             transform: translate(-50%, -50%);
-            transition: transform 0.1s ease-out;
         }
-
-        .bounce {
-            animation: cursor-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
+        .bounce { animation: cursor-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes cursor-bounce {
             0% { transform: translate(-50%, -50%) scale(1); }
             30% { transform: translate(-50%, -50%) scale(1.4); }
             50% { transform: translate(-50%, -50%) scale(0.95); }
             100% { transform: translate(-50%, -50%) scale(1); }
         }
-
         .cursor-text-container span {
-            position: absolute;
-            font-size: 12px; 
-            font-weight: 800;
-            letter-spacing: 0.05em;
-            white-space: pre; 
-            transform-origin: center bottom;
-            color: #FFFFFF !important;
-            text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
+            position: absolute; font-size: 12px; font-weight: 800;
+            letter-spacing: 0.05em; white-space: pre; transform-origin: center bottom;
+            color: #FFFFFF !important; text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
             opacity: 0; transition: opacity 0.3s ease;
         }
 
-        @media (max-width: 768px) {
-            #lavoro-sfera { padding-top: 100px; }
-        }
+        @media (max-width: 768px) { #lavoro-sfera { padding-top: 100px; } }
     </style>
 </head>
 
 <body>
+    <div id="particles-overlay"></div>
+    <div id="pull-tab"><span id="tab-label">DARK MODE</span></div>
 
     <header>
         <nav>
@@ -134,24 +164,21 @@
         let isFrozen = false;
 
         document.addEventListener('mousemove', e => {
-            const x = e.clientX;
-            const y = e.clientY;
-            cursor.style.left = x + 'px';
-            cursor.style.top = y + 'px';
-            cursorTextContainer.style.left = x + 'px';
-            cursorTextContainer.style.top = y + 'px';
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursorTextContainer.style.left = e.clientX + 'px';
+            cursorTextContainer.style.top = e.clientY + 'px';
         });
 
         document.addEventListener('mousedown', () => {
             cursor.classList.remove('bounce');
             cursorTextContainer.classList.remove('bounce');
             void cursor.offsetWidth; 
-            void cursorTextContainer.offsetWidth;
             cursor.classList.add('bounce');
             cursorTextContainer.classList.add('bounce');
         });
 
-        document.querySelectorAll('a').forEach(el => {
+        document.querySelectorAll('a, #pull-tab').forEach(el => {
             el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
             el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
         });
@@ -175,9 +202,73 @@
                 setTimeout(() => { span.style.opacity = 1; }, i * 30);
             });
         }
-    </script>
 
-    <script>
+        // --- SHATTER SYSTEM ---
+        let shatterInstance = new p5((s) => {
+            let particles = []; let isExploding = false;
+            s.setup = () => {
+                let canvas = s.createCanvas(window.innerWidth, window.innerHeight);
+                canvas.parent('particles-overlay'); s.noStroke();
+            };
+            s.draw = () => {
+                s.clear();
+                if (particles.length > 0) {
+                    particles.forEach((p, index) => {
+                        p.update(); p.display();
+                        if (p.reconstructed) particles.splice(index, 1);
+                    });
+                    if (particles.length === 0 && isExploding) {
+                        isExploding = false; document.getElementById('pull-tab').classList.remove('shattered');
+                    }
+                }
+            };
+            s.shatter = (x, y) => {
+                isExploding = true; particles = [];
+                // White particles if in Dark Mode, dark particles if in Light Mode
+                let pColor = document.body.classList.contains('dark-mode') ? 255 : 51;
+                for (let i = 0; i < 50; i++) particles.push(new Particle(s, x, y, pColor));
+                setTimeout(() => { particles.forEach(p => p.startReturn()); }, 1500);
+            };
+            class Particle {
+                constructor(s, x, y, col) {
+                    this.s = s; this.originX = x; this.originY = y;
+                    this.pos = s.createVector(x, y);
+                    this.vel = p5.Vector.random2D().mult(s.random(5, 15));
+                    this.size = s.random(4, 8); this.returning = false; this.reconstructed = false;
+                    this.color = col;
+                }
+                update() {
+                    if (this.returning) {
+                        let target = this.s.createVector(this.originX, this.originY);
+                        let dir = p5.Vector.sub(target, this.pos);
+                        if (dir.mag() < 10) this.reconstructed = true;
+                        this.pos.add(dir.normalize().mult(15));
+                    } else { this.pos.add(this.vel); this.vel.mult(0.95); }
+                }
+                display() { this.s.fill(this.color); this.s.rect(this.pos.x, this.pos.y, this.size, this.size); }
+                startReturn() { this.returning = true; }
+            }
+        });
+
+        const pullTab = document.getElementById('pull-tab');
+        const tabLabel = document.getElementById('tab-label');
+
+        pullTab.addEventListener('click', () => {
+            const rect = pullTab.getBoundingClientRect();
+            // Toggle theme first for accurate shatter color
+            const isDark = document.body.classList.toggle('dark-mode');
+            tabLabel.innerText = isDark ? "WHITE MODE" : "DARK MODE";
+            
+            pullTab.classList.add('shattered');
+            shatterInstance.shatter(rect.left + rect.width / 2, rect.top + rect.height / 2);
+            
+            document.body.classList.remove('earthquake');
+            void document.body.offsetWidth; 
+            document.body.classList.add('earthquake');
+            setTimeout(() => document.body.classList.remove('earthquake'), 500);
+        });
+
+        // --- CUBE PREVIEW ---
         new p5((s) => {
             let rotX = 0, rotY = 0, font;
             s.preload = () => { font = s.loadFont('https://cdnjs.cloudflare.com/ajax/libs/topcoat/0.8.0/font/SourceCodePro-Regular.otf'); }
@@ -188,58 +279,30 @@
                 s.textFont(font); s.textAlign(s.CENTER, s.CENTER); s.noStroke();
 
                 canvas.elt.addEventListener('mouseenter', () => {
-                    cursor.classList.add('hovered');
-                    cursorTextContainer.style.display = 'block';
+                    cursor.classList.add('hovered'); cursorTextContainer.style.display = 'block';
                     createCircularText(cursorTextContainer, isFrozen ? "Now I don't" : "Now I see you", 48);
                 });
-
                 canvas.elt.addEventListener('mouseleave', () => {
-                    cursor.classList.remove('hovered');
-                    cursorTextContainer.style.display = 'none';
+                    cursor.classList.remove('hovered'); cursorTextContainer.style.display = 'none';
                 });
-
                 canvas.elt.addEventListener('click', () => {
                     isFrozen = !isFrozen;
                     createCircularText(cursorTextContainer, isFrozen ? "Now I don't" : "Now I see you", 48);
                 });
             }
-
             s.draw = () => {
-                s.background(245);
-                let targetRotX = 0, targetRotY = 0;
-
-                if (!isFrozen) {
-                    // Normal interaction: Follow mouse
-                    targetRotY = s.map(s.mouseX, 0, s.width, -0.4, 0.4);
-                    targetRotX = s.map(s.mouseY, 0, s.height, 0.4, -0.4);
-                } else {
-                    // Sad behavior: Tilt downward and face center
-                    targetRotX = -0.5; 
-                    targetRotY = 0;
-                }
-
-                // Smoothly transition to the target rotation
-                rotX = s.lerp(rotX, targetRotX, 0.05);
-                rotY = s.lerp(rotY, targetRotY, 0.05);
-                
-                s.rotateX(rotX); 
-                s.rotateY(rotY);
-
-                s.ambientLight(180); 
-                s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
-                
+                if(document.body.classList.contains('dark-mode')) s.background(30); else s.background(245);
+                let targetRotX = isFrozen ? -0.5 : s.map(s.mouseY, 0, s.height, 0.4, -0.4);
+                let targetRotY = isFrozen ? 0 : s.map(s.mouseX, 0, s.width, -0.4, 0.4);
+                rotX = s.lerp(rotX, targetRotX, 0.05); rotY = s.lerp(rotY, targetRotY, 0.05);
+                s.rotateX(rotX); s.rotateY(rotY);
+                s.ambientLight(180); s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
                 s.push(); 
-                s.fill(220); 
-                s.box(s.width * 0.7, s.width * 0.7, s.width * 0.1); 
-                s.pop();
-
-                s.push(); 
-                s.translate(0, 0, s.width * 0.06); 
-                s.fill(30); 
-                s.textSize(s.width * 0.3);
-                s.text("H", -s.width * 0.15, 0); 
-                s.text("S", s.width * 0.15, 0); 
-                s.pop();
+                if(document.body.classList.contains('dark-mode')) s.fill(60); else s.fill(220);
+                s.box(s.width * 0.7, s.width * 0.7, s.width * 0.1); s.pop();
+                s.push(); s.translate(0, 0, s.width * 0.06); 
+                if(document.body.classList.contains('dark-mode')) s.fill(255); else s.fill(30);
+                s.textSize(s.width * 0.3); s.text("H", -s.width * 0.15, 0); s.text("S", s.width * 0.15, 0); s.pop();
             }
         });
     </script>
