@@ -15,7 +15,6 @@
             --card-bg: #f0f0f0;
             --border-color: #ccc;
             --header-bg: white;
-            /* Tab colors for Light Mode */
             --tab-bg: #333;
             --tab-text: white;
         }
@@ -26,7 +25,6 @@
             --card-bg: #1e1e1e;
             --border-color: #333;
             --header-bg: #1a1a1a;
-            /* Tab colors for Dark Mode (White tab) */
             --tab-bg: #ffffff;
             --tab-text: #000000;
         }
@@ -99,16 +97,24 @@
         /* --- CURSOR --- */
         .cursor {
             position: fixed; width: 26px; height: 26px; 
-            background-color: rgba(255, 255, 255, 0.8); 
+            background-color: rgba(255, 255, 255, 0.1); /* Low transparency by default */
             border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%);
-            transition: width 0.15s, height 0.15s; z-index: 99998; mix-blend-mode: difference; 
+            transition: width 0.15s, height 0.15s, background-color 0.2s ease; 
+            z-index: 99998; mix-blend-mode: difference; 
         }
+
+        .cursor.active {
+            background-color: rgba(255, 255, 255, 0.8); /* Solid when hovering */
+        }
+
         .cursor.hovered { width: 130px; height: 130px; }
+        
         .cursor-text-container {
             position: fixed; width: 130px; height: 130px; 
             pointer-events: none; transform: translate(-50%, -50%);
             z-index: 99999; display: none;
         }
+        
         .bounce { animation: cursor-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes cursor-bounce {
             0% { transform: translate(-50%, -50%) scale(1); }
@@ -116,10 +122,11 @@
             50% { transform: translate(-50%, -50%) scale(0.95); }
             100% { transform: translate(-50%, -50%) scale(1); }
         }
+        
         .cursor-text-container span {
             position: absolute; font-size: 12px; font-weight: 800;
             letter-spacing: 0.05em; white-space: pre; color: white; 
-            text-shadow: 0px 1px 2px rgba(0,0,0,0.2); opacity: 1;
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.2); opacity: 0;
             transition: opacity 0.5s ease;
         }
 
@@ -176,9 +183,16 @@
             textContainer.classList.add('bounce');
         });
 
+        // Hover logic for links and tab
         document.querySelectorAll('a, #pull-tab').forEach(el => {
-            el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
-            el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
+            el.addEventListener('mouseenter', () => {
+                cursor.classList.add('active');
+                cursor.classList.add('hovered');
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.classList.remove('active');
+                cursor.classList.remove('hovered');
+            });
         });
 
         function createCircularText(container, text, radius, side = "top") {
@@ -186,6 +200,7 @@
             const letters = text.toUpperCase().split("");
             const totalAngle = 110; 
             const angleStep = totalAngle / (letters.length - 1);
+            
             letters.forEach((letter, i) => {
                 let angle, x, y, rotation;
                 if (side === "top") {
@@ -207,7 +222,13 @@
                 span.style.top = `calc(50% + ${y}px)`;
                 span.style.transformOrigin = side === "top" ? "center bottom" : "center top";
                 span.style.transform = `translate(-50%, ${side === 'top' ? '-12px' : '-5px'}) rotate(${rotation}deg)`;
+                
                 container.appendChild(span);
+
+                // Fade in transition
+                setTimeout(() => {
+                    span.style.opacity = "1";
+                }, i * 50);
             });
         }
 
@@ -239,8 +260,6 @@
 
             s.shatter = (x, y) => {
                 isExploding = true; particles = [];
-                // Determine particle color based on theme
-                // If body HAS dark-mode, it means we ARE in dark mode (white particles)
                 let pColor = document.body.classList.contains('dark-mode') ? 255 : 51;
                 for (let i = 0; i < 50; i++) {
                     particles.push(new Particle(s, x - tabW/2, y, tabW, tabH, pColor));
@@ -284,8 +303,6 @@
 
         pullTab.addEventListener('click', () => {
             const rect = pullTab.getBoundingClientRect();
-            
-            // Toggle theme first so shatter color detection is accurate
             const isDark = document.body.classList.toggle('dark-mode');
             tabLabel.innerText = isDark ? "WHITE MODE" : "DARK MODE";
             
@@ -311,11 +328,13 @@
                 s.noStroke();
 
                 canvas.elt.addEventListener('mouseenter', () => {
+                    cursor.classList.add('active'); // Added to show cursor
                     cursor.classList.add('hovered');
                     textContainer.style.display = 'block';
                     updateText();
                 });
                 canvas.elt.addEventListener('mouseleave', () => {
+                    cursor.classList.remove('active'); // Added to hide cursor
                     cursor.classList.remove('hovered');
                     textContainer.style.display = 'none';
                 });

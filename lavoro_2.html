@@ -15,7 +15,6 @@
             --card-bg: #f5f5f5;
             --border-color: #ccc;
             --header-bg: white;
-            /* Tab colors for Light Mode */
             --tab-bg: #333;
             --tab-text: white;
         }
@@ -26,7 +25,6 @@
             --card-bg: #1e1e1e;
             --border-color: #333;
             --header-bg: #1a1a1a;
-            /* Tab colors for Dark Mode */
             --tab-bg: #ffffff;
             --tab-text: #000000;
         }
@@ -94,25 +92,32 @@
 
         footer { padding: 20px 3%; border-top: 1px solid var(--border-color); box-sizing: border-box; }
 
+        /* --- CURSOR --- */
         .cursor {
             position: fixed; width: 26px; height: 26px;
-            background-color: rgba(0, 0, 0, 0.3);
+            background-color: rgba(255, 255, 255, 0.1); /* Low transparency default */
             border-radius: 50%; pointer-events: none;
             transform: translate(-50%, -50%);
-            transition: width 0.15s, height 0.15s, background-color 0.15s;
-            z-index: 99998;
+            transition: width 0.15s, height 0.15s, background-color 0.2s ease;
+            z-index: 99998; mix-blend-mode: difference;
         }
+        
+        /* Solid state for hover */
+        .cursor.active {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
         .cursor.hovered {
             width: 130px; height: 130px;
-            background-color: rgba(255, 255, 255, 0.8);
-            mix-blend-mode: difference;
         }
+
         .cursor-text-container {
             position: fixed; width: 130px; height: 130px;
             top: 0; left: 0; pointer-events: none;
             display: none; z-index: 99999;
             transform: translate(-50%, -50%);
         }
+
         .bounce { animation: cursor-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes cursor-bounce {
             0% { transform: translate(-50%, -50%) scale(1); }
@@ -120,11 +125,12 @@
             50% { transform: translate(-50%, -50%) scale(0.95); }
             100% { transform: translate(-50%, -50%) scale(1); }
         }
+
         .cursor-text-container span {
             position: absolute; font-size: 12px; font-weight: 800;
             letter-spacing: 0.05em; white-space: pre; transform-origin: center bottom;
             color: #FFFFFF !important; text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
-            opacity: 0; transition: opacity 0.3s ease;
+            opacity: 0; transition: opacity 0.5s ease;
         }
 
         @media (max-width: 768px) { #lavoro-sfera { padding-top: 100px; } }
@@ -179,8 +185,14 @@
         });
 
         document.querySelectorAll('a, #pull-tab').forEach(el => {
-            el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
-            el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
+            el.addEventListener('mouseenter', () => {
+                cursor.classList.add('active');
+                cursor.classList.add('hovered');
+            });
+            el.addEventListener('mouseleave', () => {
+                cursor.classList.remove('active');
+                cursor.classList.remove('hovered');
+            });
         });
 
         function createCircularText(container, text, radius) {
@@ -199,7 +211,9 @@
                 span.style.top = `calc(50% + ${y}px)`;
                 span.style.transform = `translate(-50%,0) rotate(${angle}deg)`;
                 container.appendChild(span);
-                setTimeout(() => { span.style.opacity = 1; }, i * 30);
+                
+                // Fade transition for text
+                setTimeout(() => { span.style.opacity = 1; }, i * 50);
             });
         }
 
@@ -224,7 +238,6 @@
             };
             s.shatter = (x, y) => {
                 isExploding = true; particles = [];
-                // White particles if in Dark Mode, dark particles if in Light Mode
                 let pColor = document.body.classList.contains('dark-mode') ? 255 : 51;
                 for (let i = 0; i < 50; i++) particles.push(new Particle(s, x, y, pColor));
                 setTimeout(() => { particles.forEach(p => p.startReturn()); }, 1500);
@@ -255,7 +268,6 @@
 
         pullTab.addEventListener('click', () => {
             const rect = pullTab.getBoundingClientRect();
-            // Toggle theme first for accurate shatter color
             const isDark = document.body.classList.toggle('dark-mode');
             tabLabel.innerText = isDark ? "WHITE MODE" : "DARK MODE";
             
@@ -279,11 +291,15 @@
                 s.textFont(font); s.textAlign(s.CENTER, s.CENTER); s.noStroke();
 
                 canvas.elt.addEventListener('mouseenter', () => {
-                    cursor.classList.add('hovered'); cursorTextContainer.style.display = 'block';
+                    cursor.classList.add('active');
+                    cursor.classList.add('hovered'); 
+                    cursorTextContainer.style.display = 'block';
                     createCircularText(cursorTextContainer, isFrozen ? "Now I don't" : "Now I see you", 48);
                 });
                 canvas.elt.addEventListener('mouseleave', () => {
-                    cursor.classList.remove('hovered'); cursorTextContainer.style.display = 'none';
+                    cursor.classList.remove('active');
+                    cursor.classList.remove('hovered'); 
+                    cursorTextContainer.style.display = 'none';
                 });
                 canvas.elt.addEventListener('click', () => {
                     isFrozen = !isFrozen;

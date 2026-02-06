@@ -146,11 +146,18 @@
         /* --- CURSOR --- */
         .cursor {
             position: fixed; width: 26px; height: 26px;
-            background-color: rgba(255, 255, 255, 0.8); border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1); /* High transparency by default */
+            border-radius: 50%;
             pointer-events: none; transform: translate(-50%, -50%);
-            transition: width 0.15s, height 0.15s;
+            transition: width 0.15s, height 0.15s, background-color 0.2s ease;
             z-index: 100000; mix-blend-mode: difference;
         }
+        
+        /* Lower transparency when active (hovering/dragging) */
+        .cursor.active {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
         .cursor.hovered { width: 130px; height: 130px; }
         .cursor-text-container { position: fixed; width: 130px; height: 130px; top: 0; left: 0; pointer-events: none; display: none; z-index: 100001; transform: translate(-50%, -50%); }
         .bounce { animation: cursor-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
@@ -228,11 +235,15 @@
 
         document.querySelectorAll('a, #pull-tab').forEach(link => {
             link.addEventListener('mouseenter', () => {
+                cursor.classList.add('active'); // Reduce transparency
                 if (!isDragging) cursor.classList.add('hovered');
             });
             link.addEventListener('mouseleave', () => {
-                if (!isDragging && !link.classList.contains('work-wrapper')) {
-                    cursor.classList.remove('hovered');
+                if (!isDragging) {
+                    cursor.classList.remove('active'); // Restore high transparency
+                    if (!link.classList.contains('work-wrapper')) {
+                        cursor.classList.remove('hovered');
+                    }
                 }
             });
         });
@@ -360,6 +371,7 @@
                 isDragging = true; 
                 currentElement = el;
                 dragThresholdMet = false;
+                cursor.classList.add('active');
                 
                 startX = e.clientX; 
                 startY = e.clientY;
@@ -387,7 +399,6 @@
                 if(!isDragging) {
                     cursor.classList.add('hovered'); 
                     cursorTextContainer.style.display = 'block';
-                    // Reduced totalAngle to 100 for tighter kerning on CLICK ME
                     createCircularText(cursorTextContainer, "CLICK ME", 50, false, 100);
                 }
             });
@@ -427,6 +438,7 @@
                 resetPull();
                 if (!isHovering) {
                     cursor.classList.remove('hovered');
+                    cursor.classList.remove('active');
                     cursorTextContainer.style.display = 'none';
                 }
             }
@@ -444,13 +456,9 @@
             currentElement = null;
         }
 
-        /**
-         * Enhanced createCircularText with custom angle parameter
-         */
         function createCircularText(container, text, radius, shouldFade, customAngle) {
             container.innerHTML = "";
             const letters = text.toUpperCase().split("");
-            // Default to 140 if no customAngle is provided
             const totalAngle = customAngle || 140; 
             const angleStep = totalAngle / (letters.length - 1);
             
