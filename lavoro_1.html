@@ -26,8 +26,6 @@
         }
 
         nav a { color: black; text-decoration: none; margin-right: 20px; font-weight: 300; font-size: 1.2em; }
-        
-        /* Removed underline on hover */
         nav a:hover { text-decoration: none; }
 
         section { padding: 60px 3% 30px 3%; box-sizing: border-box; text-align: left; }
@@ -40,16 +38,14 @@
 
         #sphere-container canvas { display: block; width: 100% !important; height: 100% !important; }
 
-        #contatti { background-color: white; color: black; border-top: 1px solid #ccc; }
+        #contatti { background-color: white; color: black; border-top: 1px solid #ccc; padding-top: 40px;}
         #contatti p { max-width: 600px; line-height: 1.6; margin: 0 0 10px 0; }
         #contatti a, footer a { color: black; text-decoration: none; }
-        
-        /* Removed underline on hover for contact links */
         #contatti a:hover, footer a:hover { text-decoration: none; }
 
         footer { padding: 20px 3%; border-top: 1px solid #ccc; box-sizing: border-box; }
 
-        /* CUSTOM CURSOR */
+        /* --- CURSOR SYSTEM --- */
         .cursor {
             position: fixed; width: 26px; height: 26px; 
             background-color: rgba(255, 255, 255, 0.8); 
@@ -67,13 +63,24 @@
             z-index: 9999; display: none;
         }
 
+        /* --- BOUNCE ANIMATION --- */
+        .bounce {
+            animation: cursor-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes cursor-bounce {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            30% { transform: translate(-50%, -50%) scale(1.4); }
+            50% { transform: translate(-50%, -50%) scale(0.95); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
         .cursor-text-container span {
             position: absolute; 
             font-size: 12px; 
             font-weight: 800;
             letter-spacing: 0.05em;
             white-space: pre; 
-            transform-origin: center bottom;
             color: white; 
             text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
         }
@@ -128,24 +135,38 @@
             el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
         });
 
-        function createCircularText(container, text, radius) {
-            container.innerHTML = "";
+        function createCircularText(container, text, radius, side = "top") {
+            if (side === "top") container.innerHTML = "";
+            
             const letters = text.toUpperCase().split("");
             const totalAngle = 110; 
             const angleStep = totalAngle / (letters.length - 1);
             
             letters.forEach((letter, i) => {
-                const angle = -55 + i * angleStep; 
-                const rad = angle * (Math.PI / 180);
+                let angle, x, y, rotation;
                 
-                const x = radius * Math.sin(rad);
-                const y = -radius * Math.cos(rad) - 12; 
+                if (side === "top") {
+                    angle = -55 + i * angleStep;
+                    const rad = angle * (Math.PI / 180);
+                    x = radius * Math.sin(rad);
+                    y = -radius * Math.cos(rad);
+                    rotation = angle;
+                } else {
+                    angle = 125 + i * angleStep;
+                    const rad = angle * (Math.PI / 180);
+                    x = radius * Math.sin(rad);
+                    y = -radius * Math.cos(rad);
+                    rotation = angle + 180;
+                }
                 
                 const span = document.createElement("span");
                 span.innerText = letter;
                 span.style.left = `calc(50% + ${x}px)`;
                 span.style.top = `calc(50% + ${y}px)`;
-                span.style.transform = `translate(-50%,0) rotate(${angle}deg)`;
+                
+                span.style.transformOrigin = side === "top" ? "center bottom" : "center top";
+                span.style.transform = `translate(-50%, ${side === 'top' ? '-12px' : '-5px'}) rotate(${rotation}deg)`;
+                
                 container.appendChild(span);
             });
         }
@@ -153,8 +174,12 @@
 
     <script>
         new p5((s) => {
-            let face; let rotY = 0;
+            let face; 
+            let rotY = 0;
+            let isFrozen = false;
+
             s.preload = () => { face = s.loadImage('images/face.png'); }
+            
             s.setup = () => {
                 const container = s.select('#sphere-container');
                 const canvas = s.createCanvas(container.width, container.height, s.WEBGL);
@@ -164,19 +189,54 @@
                 canvas.elt.addEventListener('mouseenter', () => {
                     cursor.classList.add('hovered');
                     textContainer.style.display = 'block';
-                    createCircularText(textContainer, "This is me", 50);
+                    updateText();
                 });
+
                 canvas.elt.addEventListener('mouseleave', () => {
                     cursor.classList.remove('hovered');
                     textContainer.style.display = 'none';
                 });
+
+                canvas.elt.addEventListener('click', () => {
+                    // Trigger Bounce Effect
+                    cursor.classList.remove('bounce');
+                    textContainer.classList.remove('bounce');
+                    void cursor.offsetWidth; // Force reflow
+                    cursor.classList.add('bounce');
+                    textContainer.classList.add('bounce');
+
+                    // Toggle Logic
+                    isFrozen = !isFrozen;
+                    updateText();
+                });
             }
+
+            function updateText() {
+                if (!isFrozen) {
+                    createCircularText(textContainer, "This is me", 48, "top");
+                } else {
+                    createCircularText(textContainer, "This is me", 48, "top");
+                    createCircularText(textContainer, "llits tub", 48, "bottom");
+                }
+            }
+
             s.draw = () => {
                 s.background(240);
-                s.rotateY(rotY); rotY += 0.01;
-                s.ambientLight(150); s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
-                if (face) { s.texture(face); s.sphere(s.width * 0.35, 64, 64); }
+                
+                if (!isFrozen) {
+                    rotY += 0.01;
+                }
+                
+                s.rotateY(rotY);
+                s.ambientLight(150); 
+                s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
+                
+                if (face) { 
+                    s.texture(face); 
+                    s.sphere(s.width * 0.35, 64, 64); 
+                }
             }
+
             s.windowResized = () => {
                 const container = s.select('#sphere-container');
                 if (container) s.resizeCanvas(container.width, container.height);

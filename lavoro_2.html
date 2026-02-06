@@ -27,7 +27,6 @@
 
         nav a { color: black; text-decoration: none; margin-right: 20px; font-weight: 300; font-size: 1.2em; }
         
-        /* Removed underline on hover */
         nav a:hover { text-decoration: none; }
 
         section { padding-top: 60px; padding-bottom: 30px; padding-left: 3%; padding-right: 3%; box-sizing: border-box; text-align: left; }
@@ -44,7 +43,6 @@
         #contatti p { max-width: 600px; line-height: 1.6; margin: 0 0 10px 0; }
         #contatti a, footer a { color: black; text-decoration: none; }
         
-        /* Removed underline on hover for contact links */
         #contatti a:hover, footer a:hover { text-decoration: none; }
 
         footer { padding: 20px 3%; border-top: 1px solid #ccc; box-sizing: border-box; }
@@ -89,10 +87,13 @@
 
         .cursor-text-container span {
             position: absolute;
-            font-size: 10px; font-weight: 700;
-            white-space: pre; transform-origin: center bottom;
+            font-size: 12px; 
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            white-space: pre; 
+            transform-origin: center bottom;
             color: #FFFFFF !important;
-            text-shadow: 0px 0px 3px rgba(0,0,0,0.5);
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
             opacity: 0; transition: opacity 0.3s ease;
         }
 
@@ -158,13 +159,13 @@
         function createCircularText(container, text, radius) {
             container.innerHTML = "";
             const letters = text.toUpperCase().split("");
-            const totalAngle = 160;
+            const totalAngle = 140; 
             const angleStep = totalAngle / (letters.length - 1);
             letters.forEach((letter, i) => {
-                const angle = -80 + i * angleStep;
+                const angle = -(totalAngle / 2) + i * angleStep;
                 const rad = angle * (Math.PI / 180);
                 const x = radius * Math.sin(rad);
-                const y = -radius * Math.cos(rad) - 5;
+                const y = -radius * Math.cos(rad) - 12; 
                 const span = document.createElement("span");
                 span.innerText = letter;
                 span.style.left = `calc(50% + ${x}px)`;
@@ -189,7 +190,7 @@
                 canvas.elt.addEventListener('mouseenter', () => {
                     cursor.classList.add('hovered');
                     cursorTextContainer.style.display = 'block';
-                    createCircularText(cursorTextContainer, isFrozen ? "Now you don't" : "Now you see me", 52);
+                    createCircularText(cursorTextContainer, isFrozen ? "Now I don't" : "Now I see you", 48);
                 });
 
                 canvas.elt.addEventListener('mouseleave', () => {
@@ -199,24 +200,46 @@
 
                 canvas.elt.addEventListener('click', () => {
                     isFrozen = !isFrozen;
-                    createCircularText(cursorTextContainer, isFrozen ? "Now you don't" : "Now you see me", 52);
+                    createCircularText(cursorTextContainer, isFrozen ? "Now I don't" : "Now I see you", 48);
                 });
             }
 
             s.draw = () => {
                 s.background(245);
                 let targetRotX = 0, targetRotY = 0;
+
                 if (!isFrozen) {
+                    // Normal interaction: Follow mouse
                     targetRotY = s.map(s.mouseX, 0, s.width, -0.4, 0.4);
                     targetRotX = s.map(s.mouseY, 0, s.height, 0.4, -0.4);
+                } else {
+                    // Sad behavior: Tilt downward and face center
+                    targetRotX = -0.5; 
+                    targetRotY = 0;
                 }
-                rotX = s.lerp(rotX, targetRotX, 0.1);
-                rotY = s.lerp(rotY, targetRotY, 0.1);
-                s.rotateX(rotX); s.rotateY(rotY);
-                s.ambientLight(180); s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
-                s.push(); s.fill(220); s.box(s.width * 0.7, s.width * 0.7, s.width * 0.1); s.pop();
-                s.push(); s.translate(0, 0, s.width * 0.06); s.fill(30); s.textSize(s.width * 0.3);
-                s.text("H", -s.width * 0.15, 0); s.text("S", s.width * 0.15, 0); s.pop();
+
+                // Smoothly transition to the target rotation
+                rotX = s.lerp(rotX, targetRotX, 0.05);
+                rotY = s.lerp(rotY, targetRotY, 0.05);
+                
+                s.rotateX(rotX); 
+                s.rotateY(rotY);
+
+                s.ambientLight(180); 
+                s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
+                
+                s.push(); 
+                s.fill(220); 
+                s.box(s.width * 0.7, s.width * 0.7, s.width * 0.1); 
+                s.pop();
+
+                s.push(); 
+                s.translate(0, 0, s.width * 0.06); 
+                s.fill(30); 
+                s.textSize(s.width * 0.3);
+                s.text("H", -s.width * 0.15, 0); 
+                s.text("S", s.width * 0.15, 0); 
+                s.pop();
             }
         });
     </script>
