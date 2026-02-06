@@ -121,6 +121,7 @@
         const cursor = document.getElementById('cursor');
         const textContainer = document.getElementById('cursor-text-container');
 
+        // Mouse follow logic
         document.addEventListener('mousemove', e => {
             const x = e.clientX;
             const y = e.clientY;
@@ -128,6 +129,15 @@
             cursor.style.top = y + 'px';
             textContainer.style.left = x + 'px';
             textContainer.style.top = y + 'px';
+        });
+
+        // Global Bounce Logic (Fixed: Added here for blank space clicks)
+        document.addEventListener('mousedown', () => {
+            cursor.classList.remove('bounce');
+            textContainer.classList.remove('bounce');
+            void cursor.offsetWidth; 
+            cursor.classList.add('bounce');
+            textContainer.classList.add('bounce');
         });
 
         document.querySelectorAll('a').forEach(el => {
@@ -198,14 +208,7 @@
                 });
 
                 canvas.elt.addEventListener('click', () => {
-                    // Trigger Bounce Effect
-                    cursor.classList.remove('bounce');
-                    textContainer.classList.remove('bounce');
-                    void cursor.offsetWidth; // Force reflow
-                    cursor.classList.add('bounce');
-                    textContainer.classList.add('bounce');
-
-                    // Toggle Logic
+                    // Note: Global listener handles the bounce CSS now
                     isFrozen = !isFrozen;
                     updateText();
                 });
@@ -225,6 +228,10 @@
                 
                 if (!isFrozen) {
                     rotY += 0.01;
+                } else {
+                    if (s.random(1) > 0.85) {
+                        s.translate(s.random(-3, 3), s.random(-3, 3), s.random(-2, 2));
+                    }
                 }
                 
                 s.rotateY(rotY);
@@ -234,6 +241,15 @@
                 if (face) { 
                     s.texture(face); 
                     s.sphere(s.width * 0.35, 64, 64); 
+                }
+
+                if (isFrozen && s.random(1) > 0.95) {
+                    s.push();
+                    s.noFill();
+                    s.stroke(0, 50);
+                    s.strokeWeight(1);
+                    s.rect(-s.width/2, s.random(-s.height/2, s.height/2), s.width, s.random(1, 10));
+                    s.pop();
                 }
             }
 

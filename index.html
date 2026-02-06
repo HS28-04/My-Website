@@ -195,13 +195,13 @@
         function createCircularText(container, text, radius) {
             container.innerHTML = "";
             const letters = text.toUpperCase().split("");
-            const totalAngle = 110; // Matching Work 1
+            const totalAngle = 110; 
             const angleStep = totalAngle / (letters.length - 1);
             letters.forEach((letter, i) => {
                 const angle = -55 + i * angleStep;
                 const rad = angle * (Math.PI / 180);
                 const x = radius * Math.sin(rad);
-                const y = -radius * Math.cos(rad) - 12; // Matching Work 1 offset
+                const y = -radius * Math.cos(rad) - 12; 
                 const span = document.createElement("span");
                 span.innerText = letter;
                 span.style.left = `calc(50% + ${x}px)`;
@@ -225,13 +225,19 @@
                 setTimeout(() => canvasCont.classList.add('fade-in'), 300);
 
                 new p5((s) => {
-                    let face, posX, rotZ = 0, rotY = 0, startTime;
+                    let face, posX, rotZ = 0, rotY = 0, startTime, speed;
                     s.preload = () => { face = s.loadImage('images/face.png'); }
                     s.setup = () => {
                         let canvas = s.createCanvas(window.innerWidth, 300, s.WEBGL);
                         canvas.parent('loader-canvas-container');
-                        posX = -s.width * 0.4;
+                        
+                        // Start closer to center (30% of width to the left)
+                        posX = -s.width * 0.3; 
                         startTime = s.millis();
+                        
+                        // Distance is now 0.6 * width (from -0.3 to +0.3)
+                        // Time is 2200ms, approx 132 frames
+                        speed = (s.width * 0.6) / 132;
                     }
                     s.draw = () => {
                         s.background(255);
@@ -240,7 +246,11 @@
                         s.translate(posX, 0, 0); s.rotateZ(rotZ); s.rotateY(rotY);
                         if (face) { s.texture(face); s.sphere(80, 64, 64); }
                         s.pop();
-                        posX += 5; rotZ += 0.05; rotY += 0.08;
+
+                        posX += speed; 
+                        rotZ += 0.03; // Slower rotation to match slower speed
+                        rotY += 0.05;
+                        
                         if (s.millis() - startTime > 2200) {
                             loader.style.opacity = '0';
                             setTimeout(() => { loader.style.display = 'none'; sessionStorage.setItem('visited', 'true'); }, 800);
