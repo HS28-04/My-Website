@@ -66,6 +66,10 @@
         .work-wrapper.dragging { 
             transition: none; 
             z-index: 999; 
+        }
+
+        /* Vibration starts after 1s delay via JS class toggle */
+        .work-wrapper.vibrating {
             animation: struggle 0.1s infinite linear;
         }
 
@@ -124,7 +128,6 @@
             color: white; 
             text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
             opacity: 0; 
-            /* Added transition for the fade effect */
             transition: opacity 0.5s ease;
         }
 
@@ -187,7 +190,6 @@
             cursorTextContainer.style.top = e.clientY + 'px';
         });
 
-        // Global hover effect for links
         document.querySelectorAll('a').forEach(link => {
             link.addEventListener('mouseenter', () => {
                 if (!isDragging) cursor.classList.add('hovered');
@@ -226,8 +228,8 @@
                 
                 clearTimeout(textChangeTimer);
                 textChangeTimer = setTimeout(() => {
-                    if(isDragging) {
-                        // The function handles the fade-in internally now
+                    if(isDragging && currentElement) {
+                        currentElement.classList.add('vibrating');
                         createCircularText(cursorTextContainer, "LET ME GO", 50, true);
                     }
                 }, 1000);
@@ -265,23 +267,28 @@
             currentElement.style.transform = `translate(${diffX}px, ${diffY}px) scale(1.02)`;
         });
 
-        document.addEventListener('mouseup', () => {
+        document.addEventListener('mouseup', (e) => {
             if (isDragging) {
                 clearTimeout(textChangeTimer);
-                // Reset state
+                
+                // Fade out effect for "LET ME GO" text when images are released
+                const spans = cursorTextContainer.querySelectorAll('span');
+                spans.forEach(s => s.style.opacity = '0');
+
                 if (currentElement) {
-                    const rect = currentElement.getBoundingClientRect();
-                    const mouseX = window.event ? window.event.clientX : startX;
-                    const mouseY = window.event ? window.event.clientY : startY;
+                    currentElement.classList.remove('vibrating');
                     
-                    // Check if mouse is still over the element to decide if text should stay
-                    const isOver = (mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom);
-                    if (isOver) {
-                        createCircularText(cursorTextContainer, "CLICK ME", 50, false);
-                    } else {
-                        cursor.classList.remove('hovered');
-                        cursorTextContainer.style.display = 'none';
-                    }
+                    const rect = currentElement.getBoundingClientRect();
+                    const isOver = (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom);
+                    
+                    setTimeout(() => {
+                        if (isOver && !isDragging) {
+                            createCircularText(cursorTextContainer, "CLICK ME", 50, true);
+                        } else if (!isDragging) {
+                            cursor.classList.remove('hovered');
+                            cursorTextContainer.style.display = 'none';
+                        }
+                    }, 500);
                 }
                 resetPull();
             }
@@ -290,6 +297,7 @@
         function resetPull() {
             if (currentElement) {
                 currentElement.classList.remove('dragging');
+                currentElement.classList.remove('vibrating');
                 currentElement.style.transform = ''; 
             }
             isDragging = false;
@@ -313,14 +321,12 @@
                 span.style.top = `calc(50% + ${y}px)`;
                 span.style.transform = `translate(-50%,0) rotate(${angle}deg)`;
                 
-                // If it's the delayed text, start at 0 opacity to fade in
                 if (shouldFade) span.style.opacity = 0;
                 else span.style.opacity = 1;
 
                 container.appendChild(span);
                 
                 if (shouldFade) {
-                    // Trigger the fade-in via requestAnimationFrame to ensure it transitions
                     requestAnimationFrame(() => {
                         setTimeout(() => { span.style.opacity = 1; }, i * 20);
                     });

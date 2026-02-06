@@ -83,6 +83,8 @@
             white-space: pre; 
             color: white; 
             text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
+            opacity: 1;
+            transition: opacity 0.5s ease;
         }
 
         @media (max-width: 768px) {
@@ -131,7 +133,7 @@
             textContainer.style.top = y + 'px';
         });
 
-        // Global Bounce Logic (Fixed: Added here for blank space clicks)
+        // Global Bounce Logic
         document.addEventListener('mousedown', () => {
             cursor.classList.remove('bounce');
             textContainer.classList.remove('bounce');
@@ -187,6 +189,11 @@
             let face; 
             let rotY = 0;
             let isFrozen = false;
+            
+            // Smoother speed transition variables
+            let targetSpeed = 0.01;
+            let currentSpeed = 0.01;
+            let lerpFactor = 0.05; // Adjust this to control the "weight" of the stop (roughly 1s at 60fps)
 
             s.preload = () => { face = s.loadImage('images/face.png'); }
             
@@ -208,8 +215,9 @@
                 });
 
                 canvas.elt.addEventListener('click', () => {
-                    // Note: Global listener handles the bounce CSS now
                     isFrozen = !isFrozen;
+                    // Switch target speed based on frozen state
+                    targetSpeed = isFrozen ? 0 : 0.01;
                     updateText();
                 });
             }
@@ -226,13 +234,10 @@
             s.draw = () => {
                 s.background(240);
                 
-                if (!isFrozen) {
-                    rotY += 0.01;
-                } else {
-                    if (s.random(1) > 0.85) {
-                        s.translate(s.random(-3, 3), s.random(-3, 3), s.random(-2, 2));
-                    }
-                }
+                // Gradually move currentSpeed toward targetSpeed
+                currentSpeed = s.lerp(currentSpeed, targetSpeed, lerpFactor);
+                
+                rotY += currentSpeed;
                 
                 s.rotateY(rotY);
                 s.ambientLight(150); 
@@ -241,15 +246,6 @@
                 if (face) { 
                     s.texture(face); 
                     s.sphere(s.width * 0.35, 64, 64); 
-                }
-
-                if (isFrozen && s.random(1) > 0.95) {
-                    s.push();
-                    s.noFill();
-                    s.stroke(0, 50);
-                    s.strokeWeight(1);
-                    s.rect(-s.width/2, s.random(-s.height/2, s.height/2), s.width, s.random(1, 10));
-                    s.pop();
                 }
             }
 
