@@ -8,7 +8,16 @@
 
     <style>
         html { scroll-behavior: smooth; }
-        body, html { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: white; color: black; cursor: none; overflow-x: hidden; }
+        
+        /* Hides the original mouse globally and on hover */
+        * { cursor: none !important; }
+
+        body, html { 
+            margin: 0; padding: 0; 
+            font-family: Arial, sans-serif; 
+            background-color: white; color: black; 
+            overflow-x: hidden; 
+        }
 
         header {
             position: fixed; width: 100%; top: 0; height: 80px; line-height: 80px;
@@ -17,7 +26,9 @@
         }
 
         nav a { color: black; text-decoration: none; margin-right: 20px; font-weight: 300; font-size: 1.2em; }
-        nav a:hover { text-decoration: underline; }
+        
+        /* Removed underline on hover */
+        nav a:hover { text-decoration: none; }
 
         section { padding: 60px 3% 30px 3%; box-sizing: border-box; text-align: left; }
         #lavoro-sfera { padding-top: 120px; display: flex; justify-content: flex-start; min-height: 70vh; }
@@ -32,10 +43,13 @@
         #contatti { background-color: white; color: black; border-top: 1px solid #ccc; }
         #contatti p { max-width: 600px; line-height: 1.6; margin: 0 0 10px 0; }
         #contatti a, footer a { color: black; text-decoration: none; }
-        #contatti a:hover, footer a:hover { text-decoration: underline; }
+        
+        /* Removed underline on hover for contact links */
+        #contatti a:hover, footer a:hover { text-decoration: none; }
 
         footer { padding: 20px 3%; border-top: 1px solid #ccc; box-sizing: border-box; }
 
+        /* CUSTOM CURSOR */
         .cursor {
             position: fixed; width: 26px; height: 26px; 
             background-color: rgba(255, 255, 255, 0.8); 
@@ -89,7 +103,7 @@
         <p>LinkedIn: <a href="#">linkedin.com/in/hakanseker</a></p>
     </section>
 
-    <footer><p>© 2026 Hakan Seker - Tutti i diritti riservati</p></footer>
+    <footer><p>© 2026 Hakan Seker - All rights reserved | <a href="privacy.html">Privacy</a></p></footer>
 
     <div class="cursor" id="cursor"></div>
     <div class="cursor-text-container" id="cursor-text-container"></div>
@@ -125,7 +139,6 @@
                 const rad = angle * (Math.PI / 180);
                 
                 const x = radius * Math.sin(rad);
-                // Moves the text up inside the 130px circle
                 const y = -radius * Math.cos(rad) - 12; 
                 
                 const span = document.createElement("span");
