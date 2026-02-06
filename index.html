@@ -17,6 +17,8 @@
             font-family: Arial, sans-serif; 
             background-color: white; color: black; 
             overflow-x: hidden; 
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         /* --- LOADING SCREEN --- */
@@ -35,7 +37,7 @@
             background-color: white; padding: 0 3%; border-bottom: 1px solid #ccc;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); z-index: 1000; box-sizing: border-box;
         }
-        nav a { color: black; text-decoration: none; margin-right: 20px; font-weight: 300; font-size: 1.2em; }
+        nav a { color: black; text-decoration: none; margin-right: 20px; font-weight: 300; font-size: 1.2em; position: relative; z-index: 1001; }
 
         /* --- WORKS SECTION --- */
         #lavori {
@@ -54,20 +56,37 @@
             border-radius: 8px;
             overflow: hidden;
             display: block;
-            transition: transform 0.3s ease;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            touch-action: none;
+            -webkit-user-drag: none;
+            z-index: 1;
         }
         .work-wrapper:hover { transform: scale(1.02); }
+        
+        .work-wrapper.dragging { 
+            transition: none; 
+            z-index: 999; 
+            animation: struggle 0.1s infinite linear;
+        }
+
+        @keyframes struggle {
+            0% { margin-left: 0px; margin-top: 0px; rotate: 0deg; }
+            25% { margin-left: 2px; margin-top: -2px; rotate: 0.5deg; }
+            50% { margin-left: -2px; margin-top: 2px; rotate: -0.5deg; }
+            75% { margin-left: 2px; margin-top: 2px; rotate: 0.3deg; }
+            100% { margin-left: 0px; margin-top: 0px; rotate: 0deg; }
+        }
 
         #chi-sono { background-color: #f5f5f5; padding: 100px 3%; }
         #chi-sono p { max-width: 600px; line-height: 1.6; margin: 0; }
 
-        #contatti { border-top: 1px solid #ccc; padding: 60px 3%; }
+        #contatti { border-top: 1px solid #ccc; padding: 60px 3%; position: relative; z-index: 5; }
         #contatti p { margin: 0 0 10px 0; }
-        #contatti a, footer a { color: black; text-decoration: none; }
+        #contatti a, footer a { color: black; text-decoration: none; position: relative; z-index: 6; }
 
         footer { padding: 20px 3%; border-top: 1px solid #ccc; }
 
-        /* --- CURSOR SYSTEM (Work 1 Style) --- */
+        /* --- CURSOR SYSTEM --- */
         .cursor {
             position: fixed; width: 26px; height: 26px;
             background-color: rgba(255, 255, 255, 0.8); border-radius: 50%;
@@ -85,7 +104,6 @@
             transform: translate(-50%, -50%);
         }
 
-        /* Bounce Animation */
         .bounce {
             animation: cursor-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -99,13 +117,15 @@
 
         .cursor-text-container span {
             position: absolute;
-            font-size: 12px; 
-            font-weight: 800;
+            font-size: 11px; 
+            font-weight: 900;
             letter-spacing: 0.05em;
             white-space: pre; transform-origin: center bottom;
             color: white; 
             text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
-            opacity: 0; transition: opacity 0.3s ease;
+            opacity: 0; 
+            /* Added transition for the fade effect */
+            transition: opacity 0.5s ease;
         }
 
         @media (max-width: 768px) { #lavori { grid-template-columns: 1fr; } }
@@ -121,16 +141,16 @@
 
     <header>
         <nav>
-            <a href="#lavori">Projects</a>
-            <a href="#contatti">Contact</a>
+            <a href="#lavori" class="nav-link">Projects</a>
+            <a href="#contatti" class="nav-link">Contact</a>
         </nav>
     </header>
 
     <section id="lavori">
-        <a href="lavoro_1.html" class="work-wrapper">
+        <a href="lavoro_1.html" class="work-wrapper" draggable="false">
             <div id="sphere-preview" style="width:100%; height:100%;"></div>
         </a>
-        <a href="lavoro_2.html" class="work-wrapper">
+        <a href="lavoro_2.html" class="work-wrapper" draggable="false">
             <div id="font-preview" style="width:100%; height:100%;"></div>
         </a>
     </section>
@@ -161,44 +181,129 @@
         const cursorTextContainer = document.getElementById('cursor-text');
 
         document.addEventListener('mousemove', e => {
-            const x = e.clientX;
-            const y = e.clientY;
-            cursor.style.left = x + 'px';
-            cursor.style.top = y + 'px';
-            cursorTextContainer.style.left = x + 'px';
-            cursorTextContainer.style.top = y + 'px';
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            cursorTextContainer.style.left = e.clientX + 'px';
+            cursorTextContainer.style.top = e.clientY + 'px';
+        });
+
+        // Global hover effect for links
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('mouseenter', () => {
+                if (!isDragging) cursor.classList.add('hovered');
+            });
+            link.addEventListener('mouseleave', () => {
+                if (!isDragging && !link.classList.contains('work-wrapper')) {
+                    cursor.classList.remove('hovered');
+                }
+            });
         });
 
         document.addEventListener('mousedown', () => {
             cursor.classList.remove('bounce');
             cursorTextContainer.classList.remove('bounce');
             void cursor.offsetWidth; 
-            void cursorTextContainer.offsetWidth;
             cursor.classList.add('bounce');
             cursorTextContainer.classList.add('bounce');
         });
 
-        document.querySelectorAll('a').forEach(el => {
+        // --- PULL & DRAG INTERACTION ---
+        let isDragging = false;
+        let startX, startY;
+        let currentElement = null;
+        let textChangeTimer = null;
+
+        document.querySelectorAll('.work-wrapper').forEach(el => {
+            el.addEventListener('dragstart', (e) => e.preventDefault());
+
+            el.addEventListener('mousedown', (e) => {
+                if (e.button !== 0) return;
+                isDragging = true;
+                currentElement = el;
+                startX = e.clientX;
+                startY = e.clientY;
+                el.classList.add('dragging');
+                
+                clearTimeout(textChangeTimer);
+                textChangeTimer = setTimeout(() => {
+                    if(isDragging) {
+                        // The function handles the fade-in internally now
+                        createCircularText(cursorTextContainer, "LET ME GO", 50, true);
+                    }
+                }, 1000);
+                
+                e.preventDefault();
+            });
+
+            el.addEventListener('click', (e) => {
+                const transform = new DOMMatrix(getComputedStyle(el).transform);
+                const moved = Math.hypot(transform.m41, transform.m42);
+                if (moved > 10) e.preventDefault();
+            });
+
             el.addEventListener('mouseenter', () => {
                 cursor.classList.add('hovered');
-                if(el.classList.contains('work-wrapper')) {
-                    cursorTextContainer.style.display = 'block';
-                    createCircularText(cursorTextContainer, "CLICK ME", 50);
+                cursorTextContainer.style.display = 'block';
+                if(!isDragging) {
+                    createCircularText(cursorTextContainer, "CLICK ME", 50, false);
                 }
             });
+
             el.addEventListener('mouseleave', () => {
-                cursor.classList.remove('hovered');
-                cursorTextContainer.style.display = 'none';
+                if (!isDragging) {
+                    cursor.classList.remove('hovered');
+                    cursorTextContainer.style.display = 'none';
+                    resetPull();
+                }
             });
         });
 
-        function createCircularText(container, text, radius) {
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging || !currentElement) return;
+            let diffX = e.clientX - startX;
+            let diffY = e.clientY - startY;
+            currentElement.style.transform = `translate(${diffX}px, ${diffY}px) scale(1.02)`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                clearTimeout(textChangeTimer);
+                // Reset state
+                if (currentElement) {
+                    const rect = currentElement.getBoundingClientRect();
+                    const mouseX = window.event ? window.event.clientX : startX;
+                    const mouseY = window.event ? window.event.clientY : startY;
+                    
+                    // Check if mouse is still over the element to decide if text should stay
+                    const isOver = (mouseX >= rect.left && mouseX <= rect.right && mouseY >= rect.top && mouseY <= rect.bottom);
+                    if (isOver) {
+                        createCircularText(cursorTextContainer, "CLICK ME", 50, false);
+                    } else {
+                        cursor.classList.remove('hovered');
+                        cursorTextContainer.style.display = 'none';
+                    }
+                }
+                resetPull();
+            }
+        });
+
+        function resetPull() {
+            if (currentElement) {
+                currentElement.classList.remove('dragging');
+                currentElement.style.transform = ''; 
+            }
+            isDragging = false;
+            currentElement = null;
+        }
+
+        function createCircularText(container, text, radius, shouldFade) {
             container.innerHTML = "";
             const letters = text.toUpperCase().split("");
-            const totalAngle = 110; 
+            const totalAngle = 140; 
             const angleStep = totalAngle / (letters.length - 1);
+            
             letters.forEach((letter, i) => {
-                const angle = -55 + i * angleStep;
+                const angle = -(totalAngle/2) + i * angleStep;
                 const rad = angle * (Math.PI / 180);
                 const x = radius * Math.sin(rad);
                 const y = -radius * Math.cos(rad) - 12; 
@@ -207,8 +312,19 @@
                 span.style.left = `calc(50% + ${x}px)`;
                 span.style.top = `calc(50% + ${y}px)`;
                 span.style.transform = `translate(-50%,0) rotate(${angle}deg)`;
+                
+                // If it's the delayed text, start at 0 opacity to fade in
+                if (shouldFade) span.style.opacity = 0;
+                else span.style.opacity = 1;
+
                 container.appendChild(span);
-                setTimeout(() => { span.style.opacity = 1; }, i * 30);
+                
+                if (shouldFade) {
+                    // Trigger the fade-in via requestAnimationFrame to ensure it transitions
+                    requestAnimationFrame(() => {
+                        setTimeout(() => { span.style.opacity = 1; }, i * 20);
+                    });
+                }
             });
         }
 
@@ -217,26 +333,19 @@
             const loader = document.getElementById('loading-screen');
             const welcome = document.getElementById('welcome-text');
             const canvasCont = document.getElementById('loader-canvas-container');
-
             if (sessionStorage.getItem('visited')) {
                 loader.style.display = 'none';
             } else {
                 setTimeout(() => welcome.classList.add('fade-in'), 100);
                 setTimeout(() => canvasCont.classList.add('fade-in'), 300);
-
                 new p5((s) => {
                     let face, posX, rotZ = 0, rotY = 0, startTime, speed;
                     s.preload = () => { face = s.loadImage('images/face.png'); }
                     s.setup = () => {
                         let canvas = s.createCanvas(window.innerWidth, 300, s.WEBGL);
                         canvas.parent('loader-canvas-container');
-                        
-                        // Start closer to center (30% of width to the left)
                         posX = -s.width * 0.3; 
                         startTime = s.millis();
-                        
-                        // Distance is now 0.6 * width (from -0.3 to +0.3)
-                        // Time is 2200ms, approx 132 frames
                         speed = (s.width * 0.6) / 132;
                     }
                     s.draw = () => {
@@ -246,11 +355,7 @@
                         s.translate(posX, 0, 0); s.rotateZ(rotZ); s.rotateY(rotY);
                         if (face) { s.texture(face); s.sphere(80, 64, 64); }
                         s.pop();
-
-                        posX += speed; 
-                        rotZ += 0.03; // Slower rotation to match slower speed
-                        rotY += 0.05;
-                        
+                        posX += speed; rotZ += 0.03; rotY += 0.05;
                         if (s.millis() - startTime > 2200) {
                             loader.style.opacity = '0';
                             setTimeout(() => { loader.style.display = 'none'; sessionStorage.setItem('visited', 'true'); }, 800);
@@ -266,8 +371,8 @@
             let face; let rotY = 0;
             s.preload = () => { face = s.loadImage('images/face.png'); }
             s.setup = () => {
-                const rect = document.getElementById('sphere-preview').getBoundingClientRect();
-                s.createCanvas(rect.width, rect.height, s.WEBGL).parent('sphere-preview');
+                const cont = document.getElementById('sphere-preview');
+                s.createCanvas(cont.offsetWidth, cont.offsetHeight, s.WEBGL).parent('sphere-preview');
             }
             s.draw = () => {
                 s.background(240);
@@ -283,8 +388,8 @@
             let font;
             s.preload = () => { font = s.loadFont('https://cdnjs.cloudflare.com/ajax/libs/topcoat/0.8.0/font/SourceCodePro-Regular.otf'); }
             s.setup = () => {
-                const rect = document.getElementById('font-preview').getBoundingClientRect();
-                s.createCanvas(rect.width, rect.height, s.WEBGL).parent('font-preview');
+                const cont = document.getElementById('font-preview');
+                s.createCanvas(cont.offsetWidth, cont.offsetHeight, s.WEBGL).parent('font-preview');
             }
             s.draw = () => {
                 s.background(245); s.ambientLight(180); s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
