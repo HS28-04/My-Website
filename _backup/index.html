@@ -22,41 +22,6 @@
             overflow-x: hidden;
         }
 
-        /* --- LOADING SCREEN STYLES --- */
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: white;
-            z-index: 99999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            transition: opacity 1s ease-in-out;
-        }
-
-        #loading-screen h1 {
-            font-weight: 300;
-            font-size: 3em;
-            letter-spacing: 5px;
-            margin-bottom: 20px;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }
-
-        #loader-canvas-container {
-            width: 100%;
-            height: 300px;
-            opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }
-
-        .fade-in { opacity: 1 !important; }
-        /* ----------------------------- */
-
         /* Header */
         header {
             position: fixed;
@@ -131,10 +96,27 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
-        #chi-sono { background-color: #f5f5f5; }
-        #chi-sono p { max-width: 600px; line-height: 1.6; margin: 0; }
-        #contatti { border-top: 1px solid #ccc; }
-        #contatti p { max-width: 600px; line-height: 1.6; margin: 0 0 10px 0; }
+        /* About & Contact */
+        #chi-sono { 
+            background-color: #f5f5f5; 
+        }
+        
+        #chi-sono p { 
+            max-width: 600px; 
+            line-height: 1.6; 
+            margin: 0;
+        }
+
+        #contatti { 
+            border-top: 1px solid #ccc; 
+        }
+
+        #contatti p { 
+            max-width: 600px; 
+            line-height: 1.6; 
+            margin: 0 0 10px 0;
+        }
+
         #contatti a, footer a { color: black; text-decoration: none; }
         #contatti a:hover, footer a:hover { text-decoration: underline; }
 
@@ -177,11 +159,6 @@
 
 <body>
 
-    <div id="loading-screen">
-        <h1 id="welcome-text">WELCOME</h1>
-        <div id="loader-canvas-container"></div>
-    </div>
-
     <header>
         <nav>
             <a href="#lavori">Projects</a>
@@ -202,7 +179,7 @@
     </section>
 
     <section id="chi-sono">
-        <p>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."</p>
+        <p>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."</p>
     </section>
 
     <section id="contatti">
@@ -219,66 +196,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
     <script>
-        (function() {
-            const loader = document.getElementById('loading-screen');
-            const welcome = document.getElementById('welcome-text');
-            const canvasCont = document.getElementById('loader-canvas-container');
-
-            // Check if user has already seen the loader in this session
-            if (sessionStorage.getItem('visited')) {
-                loader.style.display = 'none';
-            } else {
-                // Initial Fades
-                setTimeout(() => welcome.classList.add('fade-in'), 100);
-                setTimeout(() => canvasCont.classList.add('fade-in'), 500);
-
-                // Initialize the rolling sphere loader
-                new p5((s) => {
-                    let face;
-                    let posX;
-                    let rotZ = 0;
-
-                    s.preload = () => { face = s.loadImage('images/face.png'); }
-                    s.setup = () => {
-                        let canvas = s.createCanvas(window.innerWidth, 300, s.WEBGL);
-                        canvas.parent('loader-canvas-container');
-                        posX = -s.width/2 - 100; // Start off-screen left
-                        s.noStroke();
-                    }
-                    s.draw = () => {
-                        s.background(255);
-                        s.ambientLight(150);
-                        s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
-                        
-                        s.push();
-                        s.translate(posX, 0, 0);
-                        s.rotateZ(rotZ); // Rotation to simulate rolling
-                        s.rotateY(s.frameCount * 0.02); // Some facial rotation
-                        if(face) {
-                            s.texture(face);
-                            s.sphere(80, 64, 64);
-                        }
-                        s.pop();
-
-                        posX += 5; // Rolling speed
-                        rotZ += 0.06;
-
-                        // Exit logic: when sphere rolls off-screen right
-                        if (posX > s.width/2 + 150) {
-                            loader.style.opacity = '0';
-                            setTimeout(() => {
-                                loader.style.display = 'none';
-                                sessionStorage.setItem('visited', 'true');
-                            }, 1000);
-                            s.noLoop();
-                        }
-                    }
-                });
-            }
-        })();
-    </script>
-
-    <script>
         const cursor = document.getElementById('cursor');
         document.addEventListener('mousemove', e => {
             cursor.style.left = e.clientX + 'px';
@@ -288,11 +205,16 @@
             el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
             el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
         });
+    </script>
 
-        // Grid Sphere
+    <script>
         new p5((s) => {
-            let face; let rotY = 0;
-            s.preload = () => { face = s.loadImage('images/face.png'); }
+            let face;
+            let rotY = 0;
+            s.preload = () => { 
+                // Points to local images folder
+                face = s.loadImage('images/face.png'); 
+            }
             s.setup = () => {
                 let container = s.select('#sphere-preview');
                 let canvas = s.createCanvas(container.width, container.height, s.WEBGL);
@@ -301,13 +223,23 @@
             }
             s.draw = () => {
                 s.background(240);
-                s.rotateY(rotY); rotY += 0.01;
-                s.ambientLight(150); s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
-                if(face) { s.texture(face); s.sphere(s.width * 0.35, 64, 64); }
+                s.rotateY(rotY);
+                rotY += 0.01;
+                s.ambientLight(150);
+                s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
+                if(face) {
+                    s.texture(face);
+                    s.sphere(s.width * 0.35, 64, 64);
+                }
+            }
+            s.windowResized = () => {
+                let container = s.select('#sphere-preview');
+                if(container) s.resizeCanvas(container.width, container.height);
             }
         });
+    </script>
 
-        // Grid Font Box
+    <script>
         new p5((s) => {
             let font;
             s.preload = () => { font = s.loadFont('https://cdnjs.cloudflare.com/ajax/libs/topcoat/0.8.0/font/SourceCodePro-Regular.otf'); }
@@ -315,14 +247,28 @@
                 let container = s.select('#font-preview');
                 let canvas = s.createCanvas(container.width, container.height, s.WEBGL);
                 canvas.parent('font-preview');
-                s.textFont(font); s.textAlign(s.CENTER, s.CENTER);
+                s.textFont(font);
+                s.textAlign(s.CENTER, s.CENTER);
             }
             s.draw = () => {
-                s.background(245); s.ambientLight(180); s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
-                s.rotateX(-0.2); s.rotateY(0.2); s.noStroke();
+                s.background(245);
+                s.ambientLight(180);
+                s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
+                s.rotateX(-0.2);
+                s.rotateY(0.2);
+                s.noStroke();
                 s.push(); s.fill(220); s.box(s.width * 0.7, s.width * 0.7, s.width * 0.1); s.pop();
-                s.push(); s.translate(0, 0, s.width * 0.06); s.fill(30); s.textSize(s.width * 0.3); 
-                s.text("H", -s.width * 0.15, 0); s.text("S", s.width * 0.15, 0); s.pop();
+                s.push(); 
+                s.translate(0, 0, s.width * 0.06); 
+                s.fill(30); 
+                s.textSize(s.width * 0.3); 
+                s.text("H", -s.width * 0.15, 0); 
+                s.text("S", s.width * 0.15, 0); 
+                s.pop();
+            }
+            s.windowResized = () => {
+                let container = s.select('#font-preview');
+                if(container) s.resizeCanvas(container.width, container.height);
             }
         });
     </script>

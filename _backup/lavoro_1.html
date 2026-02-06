@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio di Hakan Seker – Work 1</title>
+
+    <style>
+        html { scroll-behavior: smooth; }
+        body, html { margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: white; color: black; cursor: none; overflow-x: hidden; }
+
+        header {
+            position: fixed; width: 100%; top: 0; height: 80px; line-height: 80px;
+            background-color: white; padding: 0 3%; border-bottom: 1px solid #ccc;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); z-index: 1000; box-sizing: border-box;
+        }
+
+        nav a { color: black; text-decoration: none; margin-right: 20px; font-weight: 300; font-size: 1.2em; }
+        nav a:hover { text-decoration: underline; }
+
+        section { padding: 60px 3% 30px 3%; box-sizing: border-box; text-align: left; }
+        #lavoro-sfera { padding-top: 120px; display: flex; justify-content: flex-start; min-height: 70vh; }
+
+        #sphere-container {
+            width: 100%; max-width: 600px; aspect-ratio: 1/1;
+            border-radius: 8px; overflow: hidden; background-color: #f0f0f0;
+        }
+
+        #sphere-container canvas { display: block; width: 100% !important; height: 100% !important; }
+
+        #contatti { background-color: white; color: black; border-top: 1px solid #ccc; }
+        #contatti p { max-width: 600px; line-height: 1.6; margin: 0 0 10px 0; }
+        #contatti a, footer a { color: black; text-decoration: none; }
+        #contatti a:hover, footer a:hover { text-decoration: underline; }
+
+        footer { padding: 20px 3%; border-top: 1px solid #ccc; box-sizing: border-box; }
+
+        .cursor {
+            position: fixed; width: 26px; height: 26px; 
+            background-color: rgba(255, 255, 255, 0.8); 
+            border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%);
+            transition: width 0.15s, height 0.15s; 
+            z-index: 9998; 
+            mix-blend-mode: difference; 
+        }
+
+        .cursor.hovered { width: 130px; height: 130px; }
+
+        .cursor-text-container {
+            position: fixed; width: 130px; height: 130px; 
+            pointer-events: none; transform: translate(-50%, -50%);
+            z-index: 9999; display: none;
+        }
+
+        .cursor-text-container span {
+            position: absolute; 
+            font-size: 12px; 
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            white-space: pre; 
+            transform-origin: center bottom;
+            color: white; 
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            section { padding-top: 40px; padding-bottom: 20px; }
+            #lavoro-sfera { padding-top: 100px; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="#contatti">Contact</a>
+        </nav>
+    </header>
+
+    <section id="lavoro-sfera">
+        <div id="sphere-container"></div>
+    </section>
+
+    <section id="contatti">
+        <p>Email: <a href="mailto:hseker2000@gmail.com">hseker2000@gmail.com</a></p>
+        <p>LinkedIn: <a href="#">linkedin.com/in/hakanseker</a></p>
+    </section>
+
+    <footer><p>© 2026 Hakan Seker - Tutti i diritti riservati</p></footer>
+
+    <div class="cursor" id="cursor"></div>
+    <div class="cursor-text-container" id="cursor-text-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+
+    <script>
+        const cursor = document.getElementById('cursor');
+        const textContainer = document.getElementById('cursor-text-container');
+
+        document.addEventListener('mousemove', e => {
+            const x = e.clientX;
+            const y = e.clientY;
+            cursor.style.left = x + 'px';
+            cursor.style.top = y + 'px';
+            textContainer.style.left = x + 'px';
+            textContainer.style.top = y + 'px';
+        });
+
+        document.querySelectorAll('a').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hovered'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hovered'));
+        });
+
+        function createCircularText(container, text, radius) {
+            container.innerHTML = "";
+            const letters = text.toUpperCase().split("");
+            const totalAngle = 110; 
+            const angleStep = totalAngle / (letters.length - 1);
+            
+            letters.forEach((letter, i) => {
+                const angle = -55 + i * angleStep; 
+                const rad = angle * (Math.PI / 180);
+                
+                const x = radius * Math.sin(rad);
+                // Moves the text up inside the 130px circle
+                const y = -radius * Math.cos(rad) - 12; 
+                
+                const span = document.createElement("span");
+                span.innerText = letter;
+                span.style.left = `calc(50% + ${x}px)`;
+                span.style.top = `calc(50% + ${y}px)`;
+                span.style.transform = `translate(-50%,0) rotate(${angle}deg)`;
+                container.appendChild(span);
+            });
+        }
+    </script>
+
+    <script>
+        new p5((s) => {
+            let face; let rotY = 0;
+            s.preload = () => { face = s.loadImage('images/face.png'); }
+            s.setup = () => {
+                const container = s.select('#sphere-container');
+                const canvas = s.createCanvas(container.width, container.height, s.WEBGL);
+                canvas.parent('sphere-container');
+                s.noStroke();
+
+                canvas.elt.addEventListener('mouseenter', () => {
+                    cursor.classList.add('hovered');
+                    textContainer.style.display = 'block';
+                    createCircularText(textContainer, "This is me", 50);
+                });
+                canvas.elt.addEventListener('mouseleave', () => {
+                    cursor.classList.remove('hovered');
+                    textContainer.style.display = 'none';
+                });
+            }
+            s.draw = () => {
+                s.background(240);
+                s.rotateY(rotY); rotY += 0.01;
+                s.ambientLight(150); s.directionalLight(255, 255, 255, 0.5, 1, -0.5);
+                if (face) { s.texture(face); s.sphere(s.width * 0.35, 64, 64); }
+            }
+            s.windowResized = () => {
+                const container = s.select('#sphere-container');
+                if (container) s.resizeCanvas(container.width, container.height);
+            }
+        });
+    </script>
+</body>
+</html>
